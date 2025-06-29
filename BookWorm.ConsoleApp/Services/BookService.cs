@@ -47,33 +47,27 @@ public class BookService
         }
     }
 
-    public List<Book> GetBookList()
+    public IReadOnlyList<Book> GetBookList()
     {
         lock (_lockObject)
         {
-            // Return a copy to prevent the internal list from being modified externally (encapsulation).
-            return new List<Book>(_books);
+            // Return a read-only wrapper to prevent external modification and avoid inefficient copying.
+            return _books.AsReadOnly();
         }
     }
 
     public List<Book> SearchByAuthor(string query)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
-
-        lock (_lockObject)
-        {
-            return _books.Where(b => b.Author.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
+        // Delegate to the consolidated private search method
+        return SearchBy(b => b.Author.Contains(query, StringComparison.OrdinalIgnoreCase));
     }
 
     public List<Book> SearchByTitle(string query)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
-
-        lock (_lockObject)
-        {
-            return _books.Where(b => b.Title.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
+        // Delegate to the consolidated private search method
+        return SearchBy(b => b.Title.Contains(query, StringComparison.OrdinalIgnoreCase));
     }
 
     public void SortBooks(ISortStrategy strategy)
@@ -83,6 +77,14 @@ public class BookService
         lock (_lockObject)
         {
             strategy.Sort(_books);
+        }
+    }
+    
+    private List<Book> SearchBy(Func<Book, bool> predicate)
+    {
+        lock (_lockObject)
+        {
+            return _books.Where(predicate).ToList();
         }
     }
 }
