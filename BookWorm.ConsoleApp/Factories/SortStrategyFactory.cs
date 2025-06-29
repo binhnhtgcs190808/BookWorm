@@ -15,13 +15,13 @@ public static class SortStrategyFactory
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(criteria);
 
-        if (_strategyMap.TryGetValue(criteria, out var factory))
-        {
-            return factory();
-        }
+        if (_strategyMap.TryGetValue(criteria, out var factory)) return factory();
 
         throw new ArgumentException($"Invalid sort criteria: {criteria}", nameof(criteria));
     }
 
-    public static IEnumerable<string> GetAvailableCriteria() => _strategyMap.Keys;
+    public static IEnumerable<string> GetAvailableCriteria()
+    {
+        return _strategyMap.Keys;
+    }
 }

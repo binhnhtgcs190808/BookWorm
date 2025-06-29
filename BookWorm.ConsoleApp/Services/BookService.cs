@@ -1,7 +1,7 @@
-﻿using BookWorm.ConsoleApp.Data;
+﻿using System.Collections.ObjectModel;
+using BookWorm.ConsoleApp.Data;
 using BookWorm.ConsoleApp.Models;
 using BookWorm.ConsoleApp.Strategies;
-using System.Collections.ObjectModel;
 
 namespace BookWorm.ConsoleApp.Services;
 
@@ -10,8 +10,6 @@ public class BookService
     private readonly IBookRepository _bookRepository;
     private readonly List<Book> _books;
     private readonly object _lockObject = new();
-    
-    private string? _currentSortCriteria;
 
     public BookService(IBookRepository bookRepository)
     {
@@ -21,7 +19,7 @@ public class BookService
 
     public int BookCount => _books.Count;
 
-    public string? CurrentSortCriteria => _currentSortCriteria;
+    public string? CurrentSortCriteria { get; private set; }
 
     public void LoadBooks(string filePath)
     {
@@ -34,7 +32,7 @@ public class BookService
             {
                 _books.Clear();
                 _books.AddRange(books);
-                _currentSortCriteria = null; // Reset sort criteria on new data load.
+                CurrentSortCriteria = null; // Reset sort criteria on new data load.
             }
         }
         catch (Exception ex)
@@ -42,7 +40,7 @@ public class BookService
             throw new InvalidOperationException($"Failed to load books from file: {filePath}", ex);
         }
     }
-    
+
     public ReadOnlyCollection<Book> GetBookList()
     {
         lock (_lockObject)
@@ -66,8 +64,9 @@ public class BookService
         lock (_lockObject)
         {
             strategy.Sort(_books);
-            
-            _currentSortCriteria = strategy.GetType().Name.Replace("SortBy", "").Replace("Strategy", "").ToLowerInvariant();
+
+            CurrentSortCriteria =
+                strategy.GetType().Name.Replace("SortBy", "").Replace("Strategy", "").ToLowerInvariant();
         }
     }
 }

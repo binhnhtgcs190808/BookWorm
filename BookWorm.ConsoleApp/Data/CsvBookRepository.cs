@@ -11,17 +11,12 @@ public class CsvBookRepository : IBookRepository
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
-        if (!File.Exists(filePath))
-        {
-            throw new FileNotFoundException("The specified data file was not found.", filePath);
-        }
+        if (!File.Exists(filePath)) throw new FileNotFoundException("The specified data file was not found.", filePath);
 
-        // Use File.ReadLines for memory-efficient line-by-line reading.
-        // Skip the header row using LINQ's Skip(1).
         return File.ReadLines(filePath, Encoding.UTF8)
-                   .Skip(1)
-                   .Select(line => ParseBookFromLine(line, DetectDelimiter(filePath)))
-                   .Where(book => book is not null)!; // Filter out nulls from failed parsing.
+            .Skip(1)
+            .Select(line => ParseBookFromLine(line, DetectDelimiter(filePath)))
+            .Where(book => book is not null)!; // Filter out nulls from failed parsing.
     }
 
     private static char DetectDelimiter(string filePath)
@@ -32,26 +27,16 @@ public class CsvBookRepository : IBookRepository
 
     private static Book? ParseBookFromLine(string line, char delimiter)
     {
-        if (string.IsNullOrWhiteSpace(line))
-        {
-            return null;
-        }
+        if (string.IsNullOrWhiteSpace(line)) return null;
 
         try
         {
-
             var values = line.Split(delimiter);
 
-            if (values.Length < ExpectedFieldCount)
-            {
-                return null;
-            }
+            if (values.Length < ExpectedFieldCount) return null;
 
             // Trim whitespace and remove quotes in one go.
-            for (var i = 0; i < values.Length; i++)
-            {
-                values[i] = values[i].Trim(' ', '"');
-            }
+            for (var i = 0; i < values.Length; i++) values[i] = values[i].Trim(' ', '"');
 
             return new Book
             {
