@@ -1,5 +1,4 @@
 ﻿using BookWorm.ConsoleApp.Algorithms;
-using BookWorm.ConsoleApp.Comparers;
 using BookWorm.ConsoleApp.Factories;
 using BookWorm.ConsoleApp.Services;
 using BookWorm.ConsoleApp.Utilities;
@@ -14,7 +13,6 @@ public class ConsoleUI(BookService bookService)
     {
         Console.WriteLine("=== BookWorm Console Application ===\n");
 
-        // Centralize initial file loading here
         while (_bookService.BookCount == 0)
         {
             try
@@ -36,7 +34,6 @@ public class ConsoleUI(BookService bookService)
         if (isInitialLoad)
         {
             Console.WriteLine("Enter the path to your book data file (CSV or TXT).");
-            Console.WriteLine("- Drag & drop, paste or type (quotes/spaces handled automatically)");
         }
         Console.Write("File path (default: 'books.csv'): ");
 
@@ -53,7 +50,7 @@ public class ConsoleUI(BookService bookService)
         {
             Console.WriteLine("=== Main Menu ===");
             Console.WriteLine("1. List all books");
-            Console.WriteLine("2. Search books");
+            Console.WriteLine("2. Search books (linear)");
             Console.WriteLine("3. Sort books");
             Console.WriteLine("4. Binary search by title");
             Console.WriteLine("5. Load different data file");
@@ -73,12 +70,12 @@ public class ConsoleUI(BookService bookService)
                     case "4": BinarySearchByTitle();  break;
                     case "5": LoadDataFile();         break;
                     case "6": Console.WriteLine("Thank you for using BookWorm!"); return;
-                    default : Console.WriteLine("Invalid option. Please choose 1-6."); break;
+                    default: Console.WriteLine("Invalid option. Please choose 1-6."); break;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
             }
 
             Console.WriteLine("\nPress any key to continue...");
@@ -89,12 +86,19 @@ public class ConsoleUI(BookService bookService)
 
     private void ListAllBooks()
     {
-        // Now using the read-only list for iteration
         var books = _bookService.GetBookList();
-        if (books.Count == 0) { Console.WriteLine("No books found."); return; }
+        if (books.Count == 0)
+        {
+            Console.WriteLine("No books found.");
+            return;
+        }
 
         Console.WriteLine($"=== All Books ({books.Count}) ===");
-        for (var i = 0; i < books.Count; i++) Console.WriteLine($"{i + 1}. {books[i]}");
+
+        foreach (var book in books)
+        {
+            Console.WriteLine(book);
+        }
     }
 
     private void SearchBooks()
@@ -104,35 +108,50 @@ public class ConsoleUI(BookService bookService)
         Console.WriteLine("2. Search by author");
         Console.Write("Choose search type (1-2): ");
 
-        var type  = Console.ReadLine();
+        var type = Console.ReadLine();
         Console.Write("Enter search query: ");
         var query = Console.ReadLine();
 
-        if (string.IsNullOrWhiteSpace(query)) { Console.WriteLine("Search query cannot be empty."); return; }
-
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            Console.WriteLine("Search query cannot be empty.");
+            return;
+        }
+        
         var results = type switch
         {
-            "1" => _bookService.SearchByTitle(query),
-            "2" => _bookService.SearchByAuthor(query),
-            _   => throw new ArgumentException("Invalid search type.")
+            "1" => _bookService.SearchBy(b => b.Author.Contains(query, StringComparison.OrdinalIgnoreCase)),
+            "2" => _bookService.SearchBy(b => b.Title.Contains(query, StringComparison.OrdinalIgnoreCase)),
+            _ => throw new ArgumentException("Invalid search type."),
         };
 
-        if (results.Count == 0) { Console.WriteLine("No books found matching your search."); return; }
+        if (results.Count == 0)
+        {
+            Console.WriteLine("No books found matching your search.");
+            return;
+        }
 
         Console.WriteLine($"=== Search Results ({results.Count}) ===");
-        for (var i = 0; i < results.Count; i++) Console.WriteLine($"{i + 1}. {results[i]}");
+        foreach (var result in results)
+        {
+            Console.WriteLine(result);
+        }
     }
 
     private void SortBooks()
     {
         Console.WriteLine("=== Sort Books ===");
         var criteria = SortStrategyFactory.GetAvailableCriteria().ToList();
-        for (var i = 0; i < criteria.Count; i++) Console.WriteLine($"{i + 1}. Sort by {char.ToUpper(criteria[i][0]) + criteria[i][1..]}");
+        for (var i = 0; i < criteria.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. Sort by {char.ToUpper(criteria[i][0]) + criteria[i][1..]}");
+        }
 
         Console.Write($"Choose sort criteria (1-{criteria.Count}): ");
         if (!int.TryParse(Console.ReadLine(), out var index) || index < 1 || index > criteria.Count)
         {
-            Console.WriteLine("Invalid choice."); return;
+            Console.WriteLine("Invalid choice.");
+            return;
         }
 
         var selected = criteria[index - 1];
@@ -143,18 +162,27 @@ public class ConsoleUI(BookService bookService)
 
     private void BinarySearchByTitle()
     {
+        // Check if the list is sorted by title. If not, inform the user and sort it.
+        if (_bookService.CurrentSortCriteria != "title")
+        {
+            Console.WriteLine("Binary search requires the list to be sorted by title.");
+            Console.WriteLine("Sorting the list by title now...");
+            _bookService.SortBooks(new Strategies.SortByTitleStrategy());
+            Console.WriteLine("List sorted. Proceeding with search.\n");
+        }
+
         Console.Write("Enter book title to search: ");
         var title = Console.ReadLine();
 
-        if (string.IsNullOrWhiteSpace(title)) { Console.WriteLine("Title cannot be empty."); return; }
-
-        // Create a temporary, sorted copy for the search to ensure correctness
-        // without altering the main list's current sort order.
-        var listCopy = _bookService.GetBookList().ToList();
-        QuickSorter.Sort(listCopy, new BookPropertyComparer(b => b.Title));
-
-        var result = BinarySearcher.SearchByTitle(listCopy, title);
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            Console.WriteLine("Title cannot be empty.");
+            return;
+        }
         
+        var bookList = _bookService.GetBookList().ToList();
+        var result = BinarySearcher.SearchByTitle(bookList, title);
+
         Console.WriteLine(result is null
             ? "Book not found."
             : $"=== Book Found ===\n{result}");

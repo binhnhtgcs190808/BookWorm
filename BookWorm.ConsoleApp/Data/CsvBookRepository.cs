@@ -1,155 +1,71 @@
-﻿using BookWorm.ConsoleApp.Models;
+﻿using System.Text;
+using BookWorm.ConsoleApp.Models;
 
 namespace BookWorm.ConsoleApp.Data;
 
 public class CsvBookRepository : IBookRepository
 {
     private const int ExpectedFieldCount = 5;
-    private const int TitleIndex = 0;
-    private const int AuthorIndex = 1;
-    private const int GenreIndex = 2;
-    private const int HeightIndex = 3;
-    private const int PublisherIndex = 4;
 
     public IEnumerable<Book> LoadBooks(string filePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
-        if (!File.Exists(filePath)) throw new FileNotFoundException("The specified data file was not found.", filePath);
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException("The specified data file was not found.", filePath);
+        }
 
-        // Move the try-catch outside the iterator method
-        return LoadBooksInternal(filePath);
+        // Use File.ReadLines for memory-efficient line-by-line reading.
+        // Skip the header row using LINQ's Skip(1).
+        return File.ReadLines(filePath, Encoding.UTF8)
+                   .Skip(1)
+                   .Select(line => ParseBookFromLine(line, DetectDelimiter(filePath)))
+                   .Where(book => book is not null)!; // Filter out nulls from failed parsing.
     }
 
-    private IEnumerable<Book> LoadBooksInternal(string filePath)
+    private static char DetectDelimiter(string filePath)
     {
-        StreamReader? reader = null;
+        var extension = Path.GetExtension(filePath);
+        return string.Equals(extension, ".csv", StringComparison.OrdinalIgnoreCase) ? ',' : '|';
+    }
+
+    private static Book? ParseBookFromLine(string line, char delimiter)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return null;
+        }
 
         try
         {
-            // Decide delimiter based on file extension
-            var extension = Path.GetExtension(filePath).ToLowerInvariant();
-            var delimiter = extension == ".csv" ? ',' : '|';
 
-            reader = new StreamReader(filePath);
-
-            // Skip the header row
-            if (!reader.EndOfStream) reader.ReadLine();
-
-            while (!reader.EndOfStream)
-            {
-                string? line = null;
-
-                try
-                {
-                    line = reader.ReadLine();
-                }
-                catch (Exception ex)
-                {
-                    throw new InvalidDataException($"Error reading book data from file: {filePath}", ex);
-                }
-
-                if (string.IsNullOrWhiteSpace(line)) continue;
-
-                var book = ParseBookFromLine(line.AsSpan(), delimiter);
-                if (book != null)
-                    yield return book;
-            }
-        }
-        finally
-        {
-            // Clean up resources in finally block
-            reader?.Dispose();
-        }
-    }
-
-    private Book? ParseBookFromLine(ReadOnlySpan<char> line, char delimiter)
-    {
-        try
-        {
-            var values = delimiter == ','
-                ? ParseCsvLine(line)
-                : ParseDelimitedLine(line, delimiter);
+            var values = line.Split(delimiter);
 
             if (values.Length < ExpectedFieldCount)
+            {
                 return null;
+            }
 
-            // Trim whitespace from all values
-            for (var i = 0; i < values.Length; i++) values[i] = values[i].Trim();
-
-            if (!int.TryParse(values[HeightIndex], out var height))
-                height = 0;
+            // Trim whitespace and remove quotes in one go.
+            for (var i = 0; i < values.Length; i++)
+            {
+                values[i] = values[i].Trim(' ', '"');
+            }
 
             return new Book
             {
-                Title = values[TitleIndex],
-                Author = values[AuthorIndex],
-                Genre = values[GenreIndex],
-                Height = height,
-                Publisher = values[PublisherIndex]
+                Title = values[0],
+                Author = values[1],
+                Genre = values[2],
+                Height = int.TryParse(values[3], out var height) ? height : 0,
+                Publisher = values[4]
             };
         }
         catch
         {
-            // Skip malformed lines
+            // Skip malformed lines by returning null.
             return null;
         }
-    }
-
-    // Optimized CSV parsing using ReadOnlySpan
-    private string[] ParseCsvLine(ReadOnlySpan<char> line)
-    {
-        var values = new List<string>();
-        var inQuotes = false;
-        var start = 0;
-
-        for (var i = 0; i < line.Length; i++)
-        {
-            var c = line[i];
-
-            if (c == '"')
-            {
-                if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
-                    i++; // Skip escaped quote
-                else
-                    inQuotes = !inQuotes;
-            }
-            else if (c == ',' && !inQuotes)
-            {
-                var value = line[start..i].ToString();
-                values.Add(UnescapeQuotes(value));
-                start = i + 1;
-            }
-        }
-
-        // Add the last value
-        var lastValue = line[start..].ToString();
-        values.Add(UnescapeQuotes(lastValue));
-
-        return values.ToArray();
-    }
-
-    private string[] ParseDelimitedLine(ReadOnlySpan<char> line, char delimiter)
-    {
-        var values = new List<string>();
-        var start = 0;
-
-        for (var i = 0; i < line.Length; i++)
-            if (line[i] == delimiter)
-            {
-                values.Add(line[start..i].ToString());
-                start = i + 1;
-            }
-
-        // Add the last value
-        values.Add(line[start..].ToString());
-
-        return values.ToArray();
-    }
-
-    private static string UnescapeQuotes(string value)
-    {
-        if (value.StartsWith('"') && value.EndsWith('"')) value = value[1..^1]; // Remove surrounding quotes
-        return value.Replace("\"\"", "\""); // Unescape double quotes
     }
 }

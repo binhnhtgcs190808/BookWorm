@@ -2,11 +2,11 @@
 
 public class Book
 {
-    public string Title { get; set; } = string.Empty;
-    public string Author { get; set; } = string.Empty;
-    public string Genre { get; set; } = string.Empty;
-    public int Height { get; set; }
-    public string Publisher { get; set; } = string.Empty;
+    public required string Title { get; init; }
+    public required string Author { get; init; }
+    public required string Genre { get; init; }
+    public int Height { get; init; }
+    public required string Publisher { get; init; }
 
     public override string ToString()
     {

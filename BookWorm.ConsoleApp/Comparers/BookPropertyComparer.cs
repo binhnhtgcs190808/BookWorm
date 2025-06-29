@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using BookWorm.ConsoleApp.Models;
+﻿using BookWorm.ConsoleApp.Models;
 
 namespace BookWorm.ConsoleApp.Comparers;
 
