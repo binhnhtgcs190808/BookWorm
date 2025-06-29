@@ -9,11 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\BookWorm.ConsoleApp\BookWorm.ConsoleApp.csproj" />
+        <ProjectReference Include="..\BookWorm.ConsoleApp\BookWorm.ConsoleApp.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="MaterialDesignThemes" Version="5.2.2-ci998" />
+        <PackageReference Include="MaterialDesignThemes" Version="5.2.2-ci998"/>
     </ItemGroup>
 
 </Project>
