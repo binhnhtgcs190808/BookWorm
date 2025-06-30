@@ -6,7 +6,7 @@ using BookWorm.WPF.ViewModels;
 namespace BookWorm.WPF;
 
 /// Main application class for the WPF project.
-public partial class App : Application
+public partial class App
 {
     /// Overrides the startup event to set up the application's dependencies (Dependency Injection).
     protected override void OnStartup(StartupEventArgs e)

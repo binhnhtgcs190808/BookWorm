@@ -91,7 +91,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
     public string StatusMessage
     {
         get => _statusMessage;
-        set => SetField(ref _statusMessage, value);
+        private set => SetField(ref _statusMessage, value);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -120,7 +120,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     private void SearchBooks()
     {
-        // If search text is empty, show all books.
+        // If the search text is empty, show all books.
         if (string.IsNullOrWhiteSpace(SearchText))
         {
             RefreshBookList();
@@ -164,16 +164,15 @@ public class MainWindowViewModel : INotifyPropertyChanged
         Books = new ObservableCollection<Book>(_bookService.GetBookList());
     }
 
-    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
-        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        if (EqualityComparer<T>.Default.Equals(field, value)) return;
         field = value;
         OnPropertyChanged(propertyName);
-        return true;
     }
 }
