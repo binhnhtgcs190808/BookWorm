@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 using BookWorm.ConsoleApp.Models;
 
 namespace BookWorm.ConsoleApp.Data;
@@ -31,7 +32,9 @@ public class CsvBookRepository : IBookRepository
 
         try
         {
-            var values = line.Split(delimiter);
+            // Regex to split by a delimiter, but ignore delimiters inside quotes.
+            var regex = new Regex($"{delimiter}(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+            var values = regex.Split(line);
 
             if (values.Length < ExpectedFieldCount) return null;
 
@@ -43,8 +46,8 @@ public class CsvBookRepository : IBookRepository
                 Title = values[0],
                 Author = values[1],
                 Genre = values[2],
-                Height = int.TryParse(values[3], out var height) ? height : 0,
-                Publisher = values[4]
+                Publisher = values[3],
+                Height = values.Length > 4 && int.TryParse(values[4], out var height) ? height : 0
             };
         }
         catch
