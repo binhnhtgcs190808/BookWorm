@@ -3,7 +3,7 @@
 namespace BookWorm.WPF;
 
 /// Interaction logic for MainWindow.xaml
-public partial class MainWindow : Window
+public partial class MainWindow
 {
     public MainWindow()
     {
