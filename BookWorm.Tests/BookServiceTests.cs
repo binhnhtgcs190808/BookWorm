@@ -1,4 +1,4 @@
-﻿using BookWorm.ConsoleApp.Data;
+﻿using System.Collections.ObjectModel;
 using BookWorm.ConsoleApp.Models;
 using BookWorm.ConsoleApp.Services;
 using BookWorm.ConsoleApp.Strategies;
@@ -9,12 +9,26 @@ namespace BookWorm.Tests;
 [TestClass]
 public class BookServiceTests
 {
-    private List<Book> _testBooks = new List<Book>
+    private readonly List<Book> _testBooks = new()
     {
-        new Book { Title = "The Hobbit", Author = "J.R.R. Tolkien", Genre = "Fantasy", Publisher = "Allen & Unwin", Height = 310 },
-        new Book { Title = "Dune", Author = "Frank Herbert", Genre = "Sci-Fi", Publisher = "Chilton Books", Height = 412 },
-        new Book { Title = "1984", Author = "George Orwell", Genre = "Dystopian", Publisher = "Secker & Warburg", Height = 328 },
-        new Book { Title = "Brave New World", Author = "Aldous Huxley", Genre = "Dystopian", Publisher = "Chatto & Windus", Height = 288 }
+        new Book
+        {
+            Title = "The Hobbit", Author = "J.R.R. Tolkien", Genre = "Fantasy", Publisher = "Allen & Unwin",
+            Height = 310
+        },
+        new Book
+        {
+            Title = "Dune", Author = "Frank Herbert", Genre = "Sci-Fi", Publisher = "Chilton Books", Height = 412
+        },
+        new Book
+        {
+            Title = "1984", Author = "George Orwell", Genre = "Dystopian", Publisher = "Secker & Warburg", Height = 328
+        },
+        new Book
+        {
+            Title = "Brave New World", Author = "Aldous Huxley", Genre = "Dystopian", Publisher = "Chatto & Windus",
+            Height = 288
+        }
     };
 
     [TestMethod]
@@ -39,7 +53,7 @@ public class BookServiceTests
         Assert.IsNull(service.CurrentSortCriteria, "Sort criteria should be reset after loading.");
         CollectionAssert.AreEqual(_testBooks, service.GetBookList().ToList());
     }
-    
+
     [TestMethod]
     public void LoadBooks_WhenRepositoryThrowsException_ShouldThrowInvalidOperationException()
     {
@@ -67,7 +81,7 @@ public class BookServiceTests
         Assert.AreEqual(1, results.Count);
         Assert.AreEqual("The Hobbit", results[0].Title);
     }
-    
+
     [TestMethod]
     public void SearchBy_Author_WithNoMatches_ShouldReturnEmptyList()
     {
@@ -95,7 +109,7 @@ public class BookServiceTests
         // Act
         service.SortBooks(strategy);
         var sortedBooks = service.GetBookList();
-        
+
         // Assert
         Assert.AreEqual("title", service.CurrentSortCriteria);
         Assert.AreEqual("1984", sortedBooks[0].Title);
@@ -103,7 +117,7 @@ public class BookServiceTests
         Assert.AreEqual("Dune", sortedBooks[2].Title);
         Assert.AreEqual("The Hobbit", sortedBooks[3].Title);
     }
-    
+
     [TestMethod]
     public void SortBooks_ByAuthor_ShouldSortListCorrectly()
     {
@@ -116,7 +130,7 @@ public class BookServiceTests
         // Act
         service.SortBooks(strategy);
         var sortedBooks = service.GetBookList();
-        
+
         // Assert
         Assert.AreEqual("author", service.CurrentSortCriteria);
         Assert.AreEqual("Aldous Huxley", sortedBooks[0].Author);
@@ -124,7 +138,7 @@ public class BookServiceTests
         Assert.AreEqual("George Orwell", sortedBooks[2].Author);
         Assert.AreEqual("J.R.R. Tolkien", sortedBooks[3].Author);
     }
-    
+
     [TestMethod]
     public void GetBookList_ShouldReturnReadOnlyCollection()
     {
@@ -137,6 +151,6 @@ public class BookServiceTests
         var books = service.GetBookList();
 
         // Assert
-        Assert.IsInstanceOfType(books, typeof(System.Collections.ObjectModel.ReadOnlyCollection<Book>));
+        Assert.IsInstanceOfType(books, typeof(ReadOnlyCollection<Book>));
     }
 }

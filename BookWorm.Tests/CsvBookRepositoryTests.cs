@@ -12,14 +12,8 @@ public class CsvBookRepositoryTests
     public void Cleanup()
     {
         // Ensure temporary files are deleted after each test.
-        if (_tempCsvPath != null && File.Exists(_tempCsvPath))
-        {
-            File.Delete(_tempCsvPath);
-        }
-        if (_tempTxtPath != null && File.Exists(_tempTxtPath))
-        {
-            File.Delete(_tempTxtPath);
-        }
+        if (_tempCsvPath != null && File.Exists(_tempCsvPath)) File.Delete(_tempCsvPath);
+        if (_tempTxtPath != null && File.Exists(_tempTxtPath)) File.Delete(_tempTxtPath);
     }
 
     [TestMethod]
@@ -28,7 +22,8 @@ public class CsvBookRepositoryTests
         // Arrange
         // FIX: Create a temporary file and give it the correct .csv extension
         _tempCsvPath = Path.ChangeExtension(Path.GetTempFileName(), ".csv");
-        File.WriteAllText(_tempCsvPath, "Title,Author,Genre,Publisher,Height\n\"Dune\",\"Frank Herbert\",\"Sci-Fi\",\"Chilton Books\",412\n\"1984\",\"George Orwell\",\"Dystopian\",\"Secker & Warburg\",328");
+        File.WriteAllText(_tempCsvPath,
+            "Title,Author,Genre,Publisher,Height\n\"Dune\",\"Frank Herbert\",\"Sci-Fi\",\"Chilton Books\",412\n\"1984\",\"George Orwell\",\"Dystopian\",\"Secker & Warburg\",328");
         var repository = new CsvBookRepository();
 
         // Act
@@ -40,13 +35,14 @@ public class CsvBookRepositoryTests
         Assert.AreEqual("Frank Herbert", books[0].Author);
         Assert.AreEqual(412, books[0].Height);
     }
-    
+
     [TestMethod]
     public void LoadBooks_FromValidPipeDelimitedFile_ShouldParseCorrectly()
     {
         // Arrange
         _tempTxtPath = Path.ChangeExtension(Path.GetTempFileName(), ".txt");
-        File.WriteAllText(_tempTxtPath, "Title|Author|Genre|Publisher|Height\nDune|Frank Herbert|Sci-Fi|Chilton Books|412");
+        File.WriteAllText(_tempTxtPath,
+            "Title|Author|Genre|Publisher|Height\nDune|Frank Herbert|Sci-Fi|Chilton Books|412");
         var repository = new CsvBookRepository();
 
         // Act
@@ -64,7 +60,8 @@ public class CsvBookRepositoryTests
         // Arrange
         // FIX: Create a temporary file and give it the correct .csv extension
         _tempCsvPath = Path.ChangeExtension(Path.GetTempFileName(), ".csv");
-        File.WriteAllText(_tempCsvPath, "Title,Author,Genre,Publisher,Height\nDune,Frank Herbert,Sci-Fi,Chilton Books,412\n1984,George Orwell,Dystopian"); // Last line is missing fields
+        File.WriteAllText(_tempCsvPath,
+            "Title,Author,Genre,Publisher,Height\nDune,Frank Herbert,Sci-Fi,Chilton Books,412\n1984,George Orwell,Dystopian"); // Last line is missing fields
         var repository = new CsvBookRepository();
 
         // Act
@@ -74,7 +71,7 @@ public class CsvBookRepositoryTests
         Assert.AreEqual(1, books.Count, "Should skip the malformed line and load only the valid one.");
         Assert.AreEqual("Dune", books[0].Title);
     }
-    
+
     [TestMethod]
     public void LoadBooks_FromNonExistentFile_ShouldThrowFileNotFoundException()
     {

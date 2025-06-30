@@ -10,9 +10,7 @@ using Microsoft.Win32;
 
 namespace BookWorm.WPF.ViewModels;
 
-/// <summary>
-///     ViewModel for the main window, handling UI logic and data binding.
-/// </summary>
+/// ViewModel for the main window, handling UI logic and data binding.
 public class MainWindowViewModel : INotifyPropertyChanged
 {
     private readonly BookService _bookService;
@@ -23,9 +21,10 @@ public class MainWindowViewModel : INotifyPropertyChanged
     private string _selectedSortCriteria = "Title";
     private string _statusMessage = "Ready. Please load a data file.";
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="MainWindowViewModel" /> class.
-    /// </summary>
+
+    /// Initializes a new instance of the
+    /// <see cref="MainWindowViewModel" />
+    /// class.
     /// <param name="bookService">The book service dependency.</param>
     public MainWindowViewModel(BookService bookService)
     {
@@ -45,50 +44,50 @@ public class MainWindowViewModel : INotifyPropertyChanged
     public ICommand SearchCommand { get; }
     public ICommand SortCommand { get; }
 
-    /// <summary>
-    ///     Gets the collection of books to display in the UI.
-    /// </summary>
+
+    /// Gets the collection of books to display in the UI.
+
     public ObservableCollection<Book> Books
     {
         get => _books;
         private set => SetField(ref _books, value);
     }
 
-    /// <summary>
-    ///     Gets the list of available criteria for sorting.
-    /// </summary>
+
+    /// Gets the list of available criteria for sorting.
+
     public List<string> SortCriteria { get; }
 
-    /// <summary>
-    ///     Gets or sets the currently selected sorting criteria from the UI.
-    /// </summary>
+
+    /// Gets or sets the currently selected sorting criteria from the UI.
+
     public string SelectedSortCriteria
     {
         get => _selectedSortCriteria;
         set => SetField(ref _selectedSortCriteria, value);
     }
 
-    /// <summary>
-    ///     Gets or sets the currently selected book in the DataGrid.
-    /// </summary>
+
+    /// Gets or sets the currently selected book in the DataGrid.
+
     public Book? SelectedBook
     {
         get => _selectedBook;
         set => SetField(ref _selectedBook, value);
     }
 
-    /// <summary>
-    ///     Gets or sets the text used for searching books.
-    /// </summary>
+
+    /// Gets or sets the text used for searching books.
+
     public string? SearchText
     {
         get => _searchText;
         set => SetField(ref _searchText, value);
     }
 
-    /// <summary>
-    ///     Gets or sets the message displayed in the status bar.
-    /// </summary>
+
+    /// Gets or sets the message displayed in the status bar.
+
     public string StatusMessage
     {
         get => _statusMessage;
@@ -157,10 +156,9 @@ public class MainWindowViewModel : INotifyPropertyChanged
         }
     }
 
-    /// <summary>
-    ///     Refreshes the `Books` collection from the service. Creates a new ObservableCollection
-    ///     for an efficient, single UI update.
-    /// </summary>
+
+    /// Refreshes the `Books` collection from the service. Creates a new ObservableCollection
+    /// for an efficient, single UI update.
     private void RefreshBookList()
     {
         Books = new ObservableCollection<Book>(_bookService.GetBookList());

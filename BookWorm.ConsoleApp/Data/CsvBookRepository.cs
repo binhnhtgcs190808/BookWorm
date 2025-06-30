@@ -4,9 +4,7 @@ using BookWorm.ConsoleApp.Models;
 
 namespace BookWorm.ConsoleApp.Data;
 
-/// <summary>
 /// A repository for loading book data from CSV or delimiter-separated text files.
-/// </summary>
 public class CsvBookRepository : IBookRepository
 {
     private const int ExpectedFieldCount = 5;
@@ -17,9 +15,7 @@ public class CsvBookRepository : IBookRepository
         // FIX 1: Consistently throw ArgumentException for all invalid path cases
         // to match the expectation of the existing unit test.
         if (string.IsNullOrWhiteSpace(filePath))
-        {
             throw new ArgumentException("The file path cannot be null or whitespace.", nameof(filePath));
-        }
 
         if (!File.Exists(filePath)) throw new FileNotFoundException("The specified data file was not found.", filePath);
 
@@ -31,19 +27,19 @@ public class CsvBookRepository : IBookRepository
             .Where(book => book is not null)!;
     }
 
-    /// <summary>
+
     /// Detects the delimiter based on the file extension.
-    /// </summary>
     private static char DetectDelimiter(string filePath)
     {
         var extension = Path.GetExtension(filePath);
         return string.Equals(extension, ".csv", StringComparison.OrdinalIgnoreCase) ? ',' : '|';
     }
 
-    /// <summary>
-    /// Parses a single line from the data file into a <see cref="Book"/> object.
-    /// </summary>
-    /// <returns>A <see cref="Book"/> object, or null if the line is malformed.</returns>
+
+    /// Parses a single line from the data file into a
+    /// <see cref="Book" />
+    /// object.
+    /// <returns>A <see cref="Book" /> object, or null if the line is malformed.</returns>
     private static Book? ParseBookFromLine(string line, char delimiter)
     {
         if (string.IsNullOrWhiteSpace(line)) return null;
@@ -55,8 +51,8 @@ public class CsvBookRepository : IBookRepository
             // It matches: a quoted field OR a field not containing the delimiter.
             var regex = new Regex($"\"([^\"]*)\"|(?<=[{delimiter}]|^)([^{delimiter}]*)");
             var matches = regex.Matches(line);
-            
-            var values = matches.Cast<Match>()
+
+            var values = matches
                 .Select(m => m.Value.Trim(' ', '"'))
                 .ToList();
 

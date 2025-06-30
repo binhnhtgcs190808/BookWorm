@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\BookWorm.ConsoleApp\BookWorm.ConsoleApp.csproj" />
+        <ProjectReference Include="..\BookWorm.ConsoleApp\BookWorm.ConsoleApp.csproj"/>
     </ItemGroup>
 
 </Project>

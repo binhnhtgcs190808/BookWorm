@@ -8,9 +8,9 @@ namespace BookWorm.Tests;
 [TestClass]
 public class SortingTests
 {
-    private List<Book> _books = new List<Book>
+    private readonly List<Book> _books = new()
     {
-        new Book { Title = "Zulu", Author = "Charlie", Genre = "Yankee" , Publisher = "P", Height = 1},
+        new Book { Title = "Zulu", Author = "Charlie", Genre = "Yankee", Publisher = "P", Height = 1 },
         new Book { Title = "Alpha", Author = "Bravo", Genre = "X-Ray", Publisher = "P", Height = 1 },
         new Book { Title = "Golf", Author = "Delta", Genre = "Whiskey", Publisher = "P", Height = 1 }
     };
@@ -29,7 +29,7 @@ public class SortingTests
         Assert.AreEqual("Golf", _books[1].Title);
         Assert.AreEqual("Zulu", _books[2].Title);
     }
-    
+
     [TestMethod]
     public void SortStrategyFactory_WithValidCriteria_CreatesCorrectStrategy()
     {
@@ -43,7 +43,7 @@ public class SortingTests
         Assert.IsInstanceOfType(authorStrategy, typeof(SortByAuthorStrategy));
         Assert.IsInstanceOfType(genreStrategy, typeof(SortByGenreStrategy));
     }
-    
+
     [TestMethod]
     public void SortStrategyFactory_WithInvalidCriteria_ThrowsArgumentException()
     {
