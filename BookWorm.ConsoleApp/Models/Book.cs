@@ -1,5 +1,6 @@
 ﻿namespace BookWorm.ConsoleApp.Models;
 
+/// Represents a book with its essential properties.
 public class Book
 {
     public required string Title { get; init; }

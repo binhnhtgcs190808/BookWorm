@@ -1,13 +1,14 @@
 ﻿using System.Windows;
-using BookWorm.WPF.ViewModels;
 
 namespace BookWorm.WPF;
 
+/// Interaction logic for MainWindow.xaml
 public partial class MainWindow : Window
 {
     public MainWindow()
     {
         InitializeComponent();
-        DataContext = new MainWindowViewModel();
+        // The DataContext is now set in App.xaml.cs,
+        // which allows for dependency injection into the ViewModel.
     }
 }
