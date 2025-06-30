@@ -4,7 +4,9 @@ using BookWorm.ConsoleApp.Models;
 
 namespace BookWorm.ConsoleApp.Data;
 
+/// <summary>
 /// A repository for loading book data from CSV or delimiter-separated text files.
+/// </summary>
 public class CsvBookRepository : IBookRepository
 {
     private const int ExpectedFieldCount = 5;
@@ -12,7 +14,12 @@ public class CsvBookRepository : IBookRepository
     /// <inheritdoc />
     public IEnumerable<Book> LoadBooks(string filePath)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+        // FIX 1: Consistently throw ArgumentException for all invalid path cases
+        // to match the expectation of the existing unit test.
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            throw new ArgumentException("The file path cannot be null or whitespace.", nameof(filePath));
+        }
 
         if (!File.Exists(filePath)) throw new FileNotFoundException("The specified data file was not found.", filePath);
 
@@ -24,33 +31,36 @@ public class CsvBookRepository : IBookRepository
             .Where(book => book is not null)!;
     }
 
-
+    /// <summary>
     /// Detects the delimiter based on the file extension.
+    /// </summary>
     private static char DetectDelimiter(string filePath)
     {
         var extension = Path.GetExtension(filePath);
         return string.Equals(extension, ".csv", StringComparison.OrdinalIgnoreCase) ? ',' : '|';
     }
 
-
-    /// Parses a single line from the data file into a
-    /// <see cref="Book" />
-    /// object.
-    /// <returns>A <see cref="Book" /> object, or null if the line is malformed.</returns>
+    /// <summary>
+    /// Parses a single line from the data file into a <see cref="Book"/> object.
+    /// </summary>
+    /// <returns>A <see cref="Book"/> object, or null if the line is malformed.</returns>
     private static Book? ParseBookFromLine(string line, char delimiter)
     {
         if (string.IsNullOrWhiteSpace(line)) return null;
 
         try
         {
-            // This regex splits by the delimiter, but correctly ignores delimiters that are inside double quotes.
-            var regex = new Regex($"{delimiter}(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-            var values = regex.Split(line);
+            // FIX 2: Replaced the fragile Regex.Split with a more robust Regex.Matches.
+            // This regex correctly handles quoted fields and prevents common parsing errors.
+            // It matches: a quoted field OR a field not containing the delimiter.
+            var regex = new Regex($"\"([^\"]*)\"|(?<=[{delimiter}]|^)([^{delimiter}]*)");
+            var matches = regex.Matches(line);
+            
+            var values = matches.Cast<Match>()
+                .Select(m => m.Value.Trim(' ', '"'))
+                .ToList();
 
-            if (values.Length < ExpectedFieldCount) return null;
-
-            // Clean up each value by trimming whitespace and surrounding quotes.
-            for (var i = 0; i < values.Length; i++) values[i] = values[i].Trim(' ', '"');
+            if (values.Count < ExpectedFieldCount) return null;
 
             return new Book
             {
@@ -58,7 +68,7 @@ public class CsvBookRepository : IBookRepository
                 Author = values[1],
                 Genre = values[2],
                 Publisher = values[3],
-                Height = values.Length > 4 && int.TryParse(values[4], out var height) ? height : 0
+                Height = values.Count > 4 && int.TryParse(values[4], out var height) ? height : 0
             };
         }
         catch

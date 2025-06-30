@@ -2,3 +2,5 @@
 /BookWorm.ConsoleApp/obj/
 /BookWorm.WPF/bin/
 /BookWorm.WPF/obj/
+/BookWorm.Tests/obj/
+/BookWorm.Tests/bin/
